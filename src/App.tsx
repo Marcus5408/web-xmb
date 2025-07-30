@@ -1,37 +1,32 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import { Button } from './components/ui/button'
-import { Card } from './components/ui/card'
-import { ModeToggle } from './components/mode-toggle'
+// import { ModeToggle } from './components/mode-toggle'
+import { XMBContainer, XMBPrimaryMenu, XMBMenuCategory, XMBMenuItem } from './components/web-xmb'
+import { Gamepad2, SquarePlay } from 'lucide-react'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      <ModeToggle />
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <Card className="card">
-        <Button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </Button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </Card>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      {/* <ModeToggle /> */}
+      {/* XMB Example */}
+      <XMBContainer className='w-100'>
+        <XMBPrimaryMenu>
+          <XMBMenuCategory title="Games">
+            {
+              Array.from({ length: 5 }, (_, i) => (
+                <XMBMenuItem index={i} title={`Game ${i + 1}`} icon={`Gamepad2`} />
+              ))
+            }
+          </XMBMenuCategory>
+          <XMBMenuCategory title="Videos">
+                        {
+              Array.from({ length: 5 }, (_, i) => (
+                <XMBMenuItem index={i} title={`Video ${i + 1}`} icon={`square-play`} />
+              ))
+            }
+          </XMBMenuCategory>
+        </XMBPrimaryMenu>
+      </XMBContainer>
     </>
   )
 }
