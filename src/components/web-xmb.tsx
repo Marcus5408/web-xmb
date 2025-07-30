@@ -1,10 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
@@ -12,39 +8,9 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel";
+import type { CarouselApi } from "@/components/ui/carousel";
 
-/*
-Relies on Carousel, Card, Label, etc. from shadcn/ui.
-This file contains the main components for the Web XrossMediaBar (XMB) interface.
-
-Components:
-
-1. XMBContainer
-Main container for the Web XMB interface, responsible for rendering the entire media bar.
-It is fullscreen, and when used alone, displays nothing.
-
-2. XMBGradient
-Responsible for rendering the traditional XrossMediaBar gradient background.
-It is used in the XrossMediaBar component to provide a consistent background.
-
-3. XMBBackground
-Responsible for rendering the background image of the XrossMediaBar.
-Alternative for XMBGradient, it can be used to set a custom background image.
-
-4. XMBPrimaryMenu
-Contains the menu itself.
-Must be within a `XMBContainer`, throws an error if used elsewhere.
-
-5. XMBMenuCategory
-Represents a category in the XrossMediaBar, such as "Games" or "Videos".
-It is used to group related items together. Should only be used within a `XMBPrimaryMenu`.
-
-6. XMBMenuItem
-Represents an individual item in the XrossMediaBar, such as a game or video.
-It is used to display the icon and title of the item. Should only be used within a `XMBMenuCategory`.
-*/
-
-export function XMBContainer({
+export function XMB({
   children,
   className,
   ...props
@@ -56,52 +22,125 @@ export function XMBContainer({
   );
 }
 
-export function XMBPrimaryMenu({
+type XMBMenu = {
+  focused?: boolean;
+  index?: number;
+};
+
+export function XMBMenu({
   children,
   className,
   ...props
-}: React.ComponentProps<"div">) {
-  if (!children) {
-    throw new Error("XMBPrimaryMenu must have children");
-  }
+}: React.ComponentProps<"div"> & {
+  children: React.ReactElement<XMBMenu>[];
+}) {
+  const [api, setApi] = React.useState<CarouselApi | null>(null);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!api) return;
+    const onSelect = () => setSelectedIndex(api.selectedScrollSnap());
+    api.on("select", onSelect);
+    onSelect();
+    return () => {
+      api.off("select", onSelect);
+    };
+  }, [api]);
+
+  // Inject `focused` state into correct child
+  const items = React.Children.map(children, (child, idx) =>
+    React.isValidElement<XMBMenu>(child)
+      ? React.cloneElement(child, {
+          focused: idx === selectedIndex,
+          index: idx,
+        })
+      : child
+  );
 
   return (
     <Carousel
       orientation="horizontal"
-      className={cn("w-full max-w-xs", className)}
+      className={cn(
+        "w-full max-w-xs overflow-visible [&>div]:overflow-visible",
+        className
+      )}
+      setApi={setApi}
       {...props}
     >
-      <CarouselContent>{children}</CarouselContent>
+      <CarouselContent className="overflow-visible">{items}</CarouselContent>
       <CarouselPrevious />
       <CarouselNext />
     </Carousel>
   );
 }
 
-export function XMBMenuCategory({
-  title,
+export function XMBCategory({
+  children,
+  className,
+  focused,
+  ...props
+}: React.ComponentProps<"div"> & { focused?: boolean }) {
+  if (!children) {
+    throw new Error("XMBCategory must have children to render items.");
+  }
+
+  // Inject `focused` into children if they accept it
+  const injectedChildren = React.Children.map(children, (child) =>
+    React.isValidElement<XMBMenu>(child)
+      ? React.cloneElement(child, { focused })
+      : child
+  );
+
+  return (
+    <CarouselItem className={className} {...props}>
+      {injectedChildren}
+    </CarouselItem>
+  );
+}
+
+export function XMBCategoryTitle({
   children,
   className,
   ...props
 }: React.ComponentProps<"div">) {
   if (!children) {
-    throw new Error("XMBMenuCategory must have children");
+    throw new Error("XMBCategoryTitle must have children (text, icon, etc.)");
   }
-  if (!title) {
-    throw new Error("XMBMenuCategory must have a title");
-  }
-
   return (
-    <CarouselItem className={className} {...props}>
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">{title}</CardTitle>
-        </CardHeader>
-        <Carousel orientation="vertical" className="w-full">
+    <Card
+      className={cn(
+        "w-full max-w-sm bg-transparent shadow-none border-none",
+        className
+      )}
+      {...props}
+    >
+      <CardHeader>
+        <CardTitle className="text-xl font-semibold flex flex-col items-center justify-center">
           {children}
-        </Carousel>
-      </Card>
-    </CarouselItem>
+        </CardTitle>
+      </CardHeader>
+    </Card>
+  );
+}
+
+export function XMBCategoryContent({
+  children,
+  className,
+  focused = false,
+  ...props
+}: React.ComponentProps<"div"> & { focused?: boolean }) {
+  return (
+    <Carousel
+      orientation="vertical"
+      className={cn(
+        focused ? "opacity-100" : "opacity-0",
+        "w-full transition-opacity duration-300 ease-in-out",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </Carousel>
   );
 }
 
