@@ -1,7 +1,6 @@
 import './App.css'
 // import { ModeToggle } from './components/mode-toggle'
 import { XMBContainer, XMBPrimaryMenu, XMBMenuCategory, XMBMenuItem } from './components/web-xmb'
-import { Gamepad2, SquarePlay } from 'lucide-react'
 
 function App() {
 
