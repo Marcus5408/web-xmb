@@ -4,10 +4,7 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardAction,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import {
   Carousel,
   CarouselContent,
@@ -15,7 +12,6 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel";
-import { Button } from "@/components/ui/button";
 
 /*
 Relies on Carousel, Card, Label, etc. from shadcn/ui.
